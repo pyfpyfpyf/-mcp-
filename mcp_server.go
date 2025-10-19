@@ -58,6 +58,15 @@ type PostCommentArgs struct {
 	Content   string `json:"content" jsonschema:"评论内容"`
 }
 
+// GenerateNanoBananaCoverArgs 生成封面图参数
+// 返回完整 HTML 文本
+type GenerateNanoBananaCoverArgs struct {
+	Topic         string `json:"topic" jsonschema:"热点事件或话题关键词（可直接粘贴完整描述）"`
+	StyleOverride string `json:"style_override,omitempty" jsonschema:"可选的风格补充说明（可留空）"`
+	Background    string `json:"background,omitempty" jsonschema:"信息区背景纯色（默认 #fff）"`
+	Seed          int    `json:"seed,omitempty" jsonschema:"可选随机种子，控制图像稳定复现"`
+}
+
 // LikeFeedArgs 点赞参数
 type LikeFeedArgs struct {
 	FeedID    string `json:"feed_id" jsonschema:"小红书笔记ID，从Feed列表获取"`
@@ -293,7 +302,24 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	logrus.Infof("Registered %d MCP tools", 11)
+	// 工具 12: 一键生成小红书封面图（nano banana）
+	mcp.AddTool(server,
+		&mcp.Tool{
+			Name:        "generate_nano_banana_cover",
+			Description: "根据热点话题一键生成小红书封面图（返回完整HTML）",
+		},
+		withPanicRecovery("generate_nano_banana_cover", func(ctx context.Context, req *mcp.CallToolRequest, args GenerateNanoBananaCoverArgs) (*mcp.CallToolResult, any, error) {
+			result := appServer.handleGenerateNanoBananaCover(ctx, map[string]any{
+				"topic":          args.Topic,
+				"style_override": args.StyleOverride,
+				"background":     args.Background,
+				"seed":           args.Seed,
+			})
+			return convertToMCPResult(result), nil, nil
+		}),
+	)
+
+	logrus.Infof("Registered %d MCP tools", 12)
 }
 
 // convertToMCPResult 将自定义的 MCPToolResult 转换为官方 SDK 的格式

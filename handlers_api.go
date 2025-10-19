@@ -241,3 +241,23 @@ func (s *AppServer) myProfileHandler(c *gin.Context) {
 	c.Set("account", "ai-report")
 	respondSuccess(c, map[string]any{"data": result}, "获取我的主页成功")
 }
+
+// generateNanoBananaCoverHandler 一键生成小红书封面图（nano banana 风格），返回完整 HTML 文件
+func (s *AppServer) generateNanoBananaCoverHandler(c *gin.Context) {
+	var req GenerateCoverRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, "INVALID_REQUEST",
+			"请求参数错误", err.Error())
+		return
+	}
+
+	result, err := s.xiaohongshuService.GenerateNanoBananaCover(c.Request.Context(), &req)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, "COVER_GENERATION_FAILED",
+			"封面生成失败", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	c.String(http.StatusOK, result.HTML)
+}
