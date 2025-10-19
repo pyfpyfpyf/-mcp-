@@ -72,6 +72,19 @@ type FavoriteFeedArgs struct {
 	Unfavorite bool   `json:"unfavorite,omitempty" jsonschema:"是否取消收藏，true为取消收藏，false或未设置则为收藏"`
 }
 
+// GenerateCoverHTMLArgs 生成封面 HTML 的参数
+type GenerateCoverHTMLArgs struct {
+	ImageURL   string `json:"image_url" jsonschema:"插图区背景图URL（建议1:1比例）"`
+	Headline   string `json:"headline" jsonschema:"核心标题（加粗，34px，#111）"`
+	Quote      string `json:"quote" jsonschema:"引言/评论（21px，#555，行高1.6）"`
+	Background string `json:"background,omitempty" jsonschema:"信息区背景色（可选，默认#fff）"`
+}
+
+// GenerateCoverPromptArgs 生成 Nano Banana 封面提示词的参数
+type GenerateCoverPromptArgs struct {
+	Topic string `json:"topic,omitempty" jsonschema:"热点事件或话题，将填充到提示词的用户输入区"`
+}
+
 // InitMCPServer 初始化 MCP Server
 func InitMCPServer(appServer *AppServer) *mcp.Server {
 	// 创建 MCP Server
@@ -293,7 +306,31 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	logrus.Infof("Registered %d MCP tools", 11)
+	// 工具 12: 生成 Nano Banana 封面提示词
+	mcp.AddTool(server,
+		&mcp.Tool{
+			Name:        "nano_banana_cover_prompt",
+			Description: "获取 Nano Banana 一键稳定生成小红书封面图的提示词模板，可选 topic 自动填充",
+		},
+		withPanicRecovery("nano_banana_cover_prompt", func(ctx context.Context, req *mcp.CallToolRequest, args GenerateCoverPromptArgs) (*mcp.CallToolResult, any, error) {
+			result := appServer.handleGenerateNanoBananaCoverPrompt(ctx, args.Topic)
+			return convertToMCPResult(result), nil, nil
+		}),
+	)
+
+	// 工具 13: 生成小红书封面 HTML
+	mcp.AddTool(server,
+		&mcp.Tool{
+			Name:        "generate_xhs_cover_html",
+			Description: "生成符合规范的小红书封面 HTML（600x800，插图70%，信息区30%）",
+		},
+		withPanicRecovery("generate_xhs_cover_html", func(ctx context.Context, req *mcp.CallToolRequest, args GenerateCoverHTMLArgs) (*mcp.CallToolResult, any, error) {
+			result := appServer.handleGenerateCoverHTML(ctx, args)
+			return convertToMCPResult(result), nil, nil
+		}),
+	)
+
+	logrus.Infof("Registered %d MCP tools", 13)
 }
 
 // convertToMCPResult 将自定义的 MCPToolResult 转换为官方 SDK 的格式

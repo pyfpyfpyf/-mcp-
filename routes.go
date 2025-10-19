@@ -49,6 +49,10 @@ func setupRoutes(appServer *AppServer) *gin.Engine {
 		api.POST("/user/profile", appServer.userProfileHandler)
 		api.POST("/feeds/comment", appServer.postCommentHandler)
 		api.GET("/user/me", appServer.myProfileHandler)
+
+		// Nano Banana 封面提示词 & HTML 生成
+		api.GET("/prompts/nano_banana_cover", appServer.getNanoBananaCoverPromptHandler)
+		api.POST("/generate/cover_html", appServer.generateCoverHTMLHandler)
 	}
 
 	return router

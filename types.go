@@ -71,6 +71,21 @@ type UserProfileRequest struct {
 	XsecToken string `json:"xsec_token" binding:"required"`
 }
 
+// 生成封面 HTML 请求
+// background 可选，默认 #fff
+// image_url 为插图区背景图 URL（建议 1:1 比例）
+type GenerateCoverHTMLRequest struct {
+	ImageURL   string `json:"image_url" binding:"required"`
+	Headline   string `json:"headline" binding:"required"`
+	Quote      string `json:"quote" binding:"required"`
+	Background string `json:"background,omitempty"`
+}
+
+// GenerateCoverHTMLResponse 生成封面 HTML 响应
+type GenerateCoverHTMLResponse struct {
+	HTML string `json:"html"`
+}
+
 // ActionResult 通用动作响应（点赞/收藏等）
 type ActionResult struct {
 	FeedID  string `json:"feed_id"`

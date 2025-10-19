@@ -415,16 +415,16 @@ func (s *AppServer) handleLikeFeed(ctx context.Context, args map[string]interfac
 		return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: "操作失败: 缺少xsec_token参数"}}, IsError: true}
 	}
 	unlike, _ := args["unlike"].(bool)
-	
+
 	var res *ActionResult
 	var err error
-	
+
 	if unlike {
 		res, err = s.xiaohongshuService.UnlikeFeed(ctx, feedID, xsecToken)
 	} else {
 		res, err = s.xiaohongshuService.LikeFeed(ctx, feedID, xsecToken)
 	}
-	
+
 	if err != nil {
 		action := "点赞"
 		if unlike {
@@ -432,7 +432,7 @@ func (s *AppServer) handleLikeFeed(ctx context.Context, args map[string]interfac
 		}
 		return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: action + "失败: " + err.Error()}}, IsError: true}
 	}
-	
+
 	action := "点赞"
 	if unlike {
 		action = "取消点赞"
@@ -451,16 +451,16 @@ func (s *AppServer) handleFavoriteFeed(ctx context.Context, args map[string]inte
 		return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: "操作失败: 缺少xsec_token参数"}}, IsError: true}
 	}
 	unfavorite, _ := args["unfavorite"].(bool)
-	
+
 	var res *ActionResult
 	var err error
-	
+
 	if unfavorite {
 		res, err = s.xiaohongshuService.UnfavoriteFeed(ctx, feedID, xsecToken)
 	} else {
 		res, err = s.xiaohongshuService.FavoriteFeed(ctx, feedID, xsecToken)
 	}
-	
+
 	if err != nil {
 		action := "收藏"
 		if unfavorite {
@@ -468,7 +468,7 @@ func (s *AppServer) handleFavoriteFeed(ctx context.Context, args map[string]inte
 		}
 		return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: action + "失败: " + err.Error()}}, IsError: true}
 	}
-	
+
 	action := "收藏"
 	if unfavorite {
 		action = "取消收藏"
@@ -536,4 +536,19 @@ func (s *AppServer) handlePostComment(ctx context.Context, args map[string]inter
 			Text: resultText,
 		}},
 	}
+}
+
+// handleGenerateNanoBananaCoverPrompt 生成 Nano Banana 封面提示词
+func (s *AppServer) handleGenerateNanoBananaCoverPrompt(_ context.Context, topic string) *MCPToolResult {
+	prompt := s.xiaohongshuService.GenerateNanoBananaCoverPrompt(topic)
+	return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: prompt}}}
+}
+
+// handleGenerateCoverHTML 生成小红书封面 HTML
+func (s *AppServer) handleGenerateCoverHTML(ctx context.Context, args GenerateCoverHTMLArgs) *MCPToolResult {
+	htmlDoc, err := s.xiaohongshuService.GenerateCoverHTML(ctx, args.ImageURL, args.Headline, args.Quote, args.Background)
+	if err != nil {
+		return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: "生成封面HTML失败: " + err.Error()}}, IsError: true}
+	}
+	return &MCPToolResult{Content: []MCPContent{{Type: "text", Text: htmlDoc}}}
 }
